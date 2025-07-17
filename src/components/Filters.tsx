@@ -21,7 +21,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
   console.log(BASE_URL);
   useEffect(() => {
     axios
-      .get(`${BASE_URL}/api/getDistinctAreas`)
+      .get(`${BASE_URL}/api/getdistinctareas`)
       .then((res) => {
         const sortedPanchayats = (res.data.panchayats || []).sort(
           (a: string, b: string) => a.localeCompare(b)
