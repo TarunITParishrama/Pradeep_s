@@ -11,7 +11,7 @@ export default function Materialistic() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <h2 className="text-3xl font-bold text-yellow-700 mb-6">Materialistic Aid</h2>
+      <h2 className="text-3xl font-bold text-yellow-700 mb-6">Hospital Service</h2>
       <div className="mb-4">
         <button
           onClick={() => navigate(-1)}
@@ -42,7 +42,7 @@ export default function Materialistic() {
               <td className="py-2 px-4 border">1</td>
               <td className="py-2 px-4 border">Mohan Yadav</td>
               <td className="py-2 px-4 border">Wheelchair</td>
-              <td className="py-2 px-4 border">Delivered</td>
+              <td className="py-2 px-4 border">Provided</td>
             </tr>
             <tr>
               <td className="py-2 px-4 border">2</td>

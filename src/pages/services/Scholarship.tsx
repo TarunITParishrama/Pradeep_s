@@ -11,7 +11,7 @@ export default function Scholarship() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <h2 className="text-3xl font-bold text-blue-700 mb-6">Scholarship Services</h2>
+      <h2 className="text-3xl font-bold text-blue-700 mb-6">Digital Services</h2>
       <div className="mb-4">
         <button
           onClick={() => navigate(-1)}
@@ -32,8 +32,8 @@ export default function Scholarship() {
           <thead>
             <tr className="bg-gray-200">
               <th className="py-2 px-4 border">#</th>
-              <th className="py-2 px-4 border">Student Name</th>
-              <th className="py-2 px-4 border">Course</th>
+              <th className="py-2 px-4 border">Name</th>
+              <th className="py-2 px-4 border">Complaint</th>
               <th className="py-2 px-4 border">Status</th>
             </tr>
           </thead>
@@ -41,13 +41,13 @@ export default function Scholarship() {
             <tr>
               <td className="py-2 px-4 border">1</td>
               <td className="py-2 px-4 border">Asha Kumari</td>
-              <td className="py-2 px-4 border">B.Sc</td>
-              <td className="py-2 px-4 border">Approved</td>
+              <td className="py-2 px-4 border">Light Issue</td>
+              <td className="py-2 px-4 border">Resolved</td>
             </tr>
             <tr>
               <td className="py-2 px-4 border">2</td>
               <td className="py-2 px-4 border">Ramesh Das</td>
-              <td className="py-2 px-4 border">M.A</td>
+              <td className="py-2 px-4 border">Road Issue</td>
               <td className="py-2 px-4 border">Pending</td>
             </tr>
           </tbody>

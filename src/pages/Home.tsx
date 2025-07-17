@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import mdpic from "../assets/MDPhoto.png";
+import mdpic from "../assets/MDPhoto.jpg";
 
 type DashboardItem = {
   label: string;
@@ -39,19 +39,18 @@ export default function Home() {
       <img
         src={mdpic}
         alt="MD"
-        className="absolute top-0 left-0 h-full opacity-70 object-contain z-0 pointer-events-none"
+        className="flex top-0 left-28 h-full opacity-70 object-contain z-0 pointer-events-none"
       />
 
       {/* Overlay to fade behind the tiles */}
-      <div className="absolute inset-0 bg-white bg-opacity-30 backdrop-blur-sm z-10" />
+      <div className="absolute inset-0 bg-white bg-opacity-10 backdrop-blur-lg z-10" />
 
       {/* Dashboard content */}
       <div className="relative z-20">
-        <h1 className="text-3xl font-bold text-center mb-12 text-gray-800">
-          Dashboard
+        <h1 className="text-3xl font-bold text-center mb-12 text-gray-700">
+          Pradeep Eshwar's Dashboard
         </h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-36">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-56">
           {dashboardItems.map((item, idx) => (
             <div
               key={idx}

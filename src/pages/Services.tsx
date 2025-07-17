@@ -2,25 +2,25 @@ import { useNavigate } from "react-router-dom";
 
 const tabs = [
   {
-    label: "Ambulance",
+    label: "Amma Ambulance",
     icon: "https://img.icons8.com/3d-fluency/94/ambulance.png",
     route: "/services/ambulance",
   },
   {
-    label: "Scholarship",
-    icon: "https://img.icons8.com/3d-fluency/94/graduation-cap.png",
+    label: "Digital Chikkabalapura",
+    icon: "https://img.icons8.com/3d-fluency/94/qr-code.png",
     route: "/services/scholarship",
   },
   {
-    label: "Materialistic",
-    icon: "https://img.icons8.com/3d-fluency/94/clothes.png",
+    label: "Amma Clinic",
+    icon: "https://img.icons8.com/3d-fluency/94/hospital.png",
     route: "/services/materialistic",
   },
-  {
-    label: "Others",
-    icon: "https://img.icons8.com/3d-fluency/94/more.png",
-    route: "/services/others",
-  },
+  // {
+  //   label: "",
+  //   icon: "https://img.icons8.com/3d-fluency/94/more.png",
+  //   route: "/services/others",
+  // },
 ];
 
 export default function Services() {
