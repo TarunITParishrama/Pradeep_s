@@ -49,6 +49,7 @@ const Ambulance = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   const ITEMS_PER_PAGE = 10;
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const [isParsing, setIsParsing] = useState(false);
 
@@ -120,7 +121,7 @@ const Ambulance = () => {
           `Uploading batch ${i / batchSize + 1} with ${batch.length} records`
         );
         await axios.post(
-          `${process.env.BACKEND_URL}/api/addambulancerecords`,
+          `${BASE_URL}/api/addambulancerecords`,
           batch
         );
       }
@@ -135,11 +136,11 @@ const Ambulance = () => {
   };
 
   const fetchAmbulanceData = useCallback(async () => {
-    if (!filters.selectedArea) return;
+    //if (!filters.selectedArea) return;
     try {
       setLoading(true);
       const res = await axios.get(
-        `${process.env.BACKEND_URL}/api/getambulancerecords`,
+        `${BASE_URL}/api/getambulancerecords`,
         {
           params: {
             areaType: filters.areaType,
@@ -157,7 +158,7 @@ const Ambulance = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters, page]);
+  }, [BASE_URL, filters.areaType, filters.selectedArea, page]);
 
   useEffect(() => {
     setPage(1);
