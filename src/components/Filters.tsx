@@ -18,21 +18,20 @@ export default function Filters({ onFilterChange }: FiltersProps) {
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  console.log(BASE_URL);
+
+
   useEffect(() => {
     axios
       .get(`${BASE_URL}/api/getDistinctAreas`)
       .then((res) => {
-        const sortedPanchayats = (res.data.panchayats || []).sort(
-          (a: string, b: string) => a.localeCompare(b)
+        const sortedPanchayats = (res.data.panchayats || []).sort((a: string, b: string) =>
+          a.localeCompare(b)
         );
-        const sortedWards = (res.data.wards || []).sort(
-          (a: string, b: string) => {
-            const numA = parseInt(a.replace(/\D/g, ""), 10);
-            const numB = parseInt(b.replace(/\D/g, ""), 10);
-            return numA - numB;
-          }
-        );
+        const sortedWards = (res.data.wards || []).sort((a: string, b: string) => {
+          const numA = parseInt(a.replace(/\D/g, ""), 10);
+          const numB = parseInt(b.replace(/\D/g, ""), 10);
+          return numA - numB;
+        });
 
         setPanchayats(sortedPanchayats);
         setWards(sortedWards);
@@ -50,10 +49,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
 
   const options = areaType === "panchayat" ? panchayats : wards;
   const totalPages = Math.ceil(options.length / ITEMS_PER_PAGE);
-  const currentOptions = options.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  );
+  const currentOptions = options.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   return (
     <div className="bg-white p-4 rounded-lg shadow mb-6">
