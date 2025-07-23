@@ -1,7 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import Filters from "../../components/Filters";
+import Filters,{type FiltersChange} from "../../components/Filters";
 import * as XLSX from "xlsx";
+type FilterState = {
+  areaType: "panchayat" | "ward";
+  selectedArea: string;
+  selectedVillage: string;
+};
 type ExcelRow = {
   Date?: string;
   "Patient Name"?: string;
@@ -36,11 +41,23 @@ interface AmbulanceRecord {
   dateTime: string;
 }
 
+interface Counts {
+  panchayat: number;
+  ward: number;
+  filtered: number;
+}
+
 const Ambulance = () => {
   const [ambulanceData, setAmbulanceData] = useState<AmbulanceRecord[]>([]);
-  const [filters, setFilters] = useState({
-    areaType: "panchayat",
+  const [filters, setFilters] = useState<FilterState>({
+    areaType: "panchayat" as "panchayat" | "ward",
     selectedArea: "",
+    selectedVillage: "",
+  });
+  const [counts, setCounts] = useState<Counts>({
+    panchayat: 0,
+    ward: 0,
+    filtered: 0,
   });
   const [loading, setLoading] = useState(false);
   const [bulkData, setBulkData] = useState<AmbulanceRecord[]>([]);
@@ -120,13 +137,12 @@ const Ambulance = () => {
         console.log(
           `Uploading batch ${i / batchSize + 1} with ${batch.length} records`
         );
-        await axios.post(
-          `${BASE_URL}/api/addambulancerecords`,
-          batch
-        );
+        await axios.post(`${BASE_URL}/api/addambulancerecords`, batch);
       }
       alert("All records uploaded successfully!");
       setBulkData([]);
+      // Refresh data after upload
+      fetchAmbulanceData();
     } catch (err) {
       console.error("Upload error", err);
       alert("Error during upload. Check console for details.");
@@ -136,29 +152,42 @@ const Ambulance = () => {
   };
 
   const fetchAmbulanceData = useCallback(async () => {
-    //if (!filters.selectedArea) return;
     try {
       setLoading(true);
-      const res = await axios.get(
-        `${BASE_URL}/api/getambulancerecords`,
-        {
-          params: {
-            areaType: filters.areaType,
-            selectedArea: filters.selectedArea,
-            page,
-            limit: ITEMS_PER_PAGE,
-          },
-        }
-      );
+      const params: Record<string, string | number> = {
+        page,
+        limit: ITEMS_PER_PAGE,
+      };
+      params.areaType = filters.areaType;
+
+      if (filters.selectedArea) params.selectedArea = filters.selectedArea;
+      if (filters.selectedVillage) params.selectedVillage = filters.selectedVillage;
+
+      const res = await axios.get(`${BASE_URL}/api/getambulancerecords`, {
+        params,
+      });
 
       setAmbulanceData(res.data.data);
       setTotalPages(res.data.pagination.totalPages);
+      setCounts(res.data.counts || { panchayat: 0, ward: 0, filtered: 0 });
     } catch (err) {
       console.error("Error fetching ambulance data", err);
+      setAmbulanceData([]);
+      setCounts({ panchayat: 0, ward: 0, filtered: 0 });
     } finally {
       setLoading(false);
     }
-  }, [BASE_URL, filters.areaType, filters.selectedArea, page]);
+  }, [BASE_URL, filters.areaType, filters.selectedArea, filters.selectedVillage, page]);
+
+  const handleFilterChange: FiltersChange = (incoming) => {
+    setPage(1);
+    setFilters({
+      areaType: incoming.areaType,
+      selectedArea: incoming.selectedArea,
+      // ensure selectedVillage is always a string
+      selectedVillage: incoming.selectedVillage ?? "",
+    });
+  };
 
   useEffect(() => {
     setPage(1);
@@ -170,7 +199,43 @@ const Ambulance = () => {
 
   return (
     <div className="p-4">
-      <Filters onFilterChange={setFilters} />
+      <h1 className="text-2xl font-bold mb-6">Ambulance Records Management</h1>
+      
+      {/* Filters Component */}
+      <Filters onFilterChange={handleFilterChange} />
+
+      {/* Record Counts Display */}
+      <div className="my-6 bg-gray-50 p-4 rounded-lg border">
+        <h3 className="text-lg font-semibold mb-3">Record Statistics</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-100 p-3 rounded text-center">
+            <div className="text-2xl font-bold text-blue-600">{counts.panchayat}</div>
+            <div className="text-sm text-gray-600">Panchayat Records</div>
+          </div>
+          <div className="bg-green-100 p-3 rounded text-center">
+            <div className="text-2xl font-bold text-green-600">{counts.ward}</div>
+            <div className="text-sm text-gray-600">Ward Records</div>
+          </div>
+          <div className="bg-purple-100 p-3 rounded text-center">
+            <div className="text-2xl font-bold text-purple-600">{counts.filtered}</div>
+            <div className="text-sm text-gray-600">Filtered Results</div>
+          </div>
+        </div>
+        
+        {/* Current Filter Info */}
+        {(filters.selectedArea || filters.selectedVillage) && (
+          <div className="mt-3 p-2 bg-yellow-50 rounded border-l-4 border-yellow-400">
+            <p className="text-sm">
+              <strong>Current Filter:</strong> 
+              {filters.areaType === "panchayat" ? " Panchayat" : " Ward"} 
+              {filters.selectedArea && ` → ${filters.selectedArea}`}
+              {filters.selectedVillage && ` → ${filters.selectedVillage}`}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Bulk Upload Section */}
       <div className="bg-gray-50 p-4 rounded mb-4">
         <h3 className="font-semibold mb-2">Bulk Upload Ambulance Records</h3>
         <input
@@ -214,7 +279,7 @@ const Ambulance = () => {
             <button
               onClick={handleUpload}
               disabled={uploading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {uploading ? "Uploading..." : "Upload Now"}
             </button>
@@ -251,64 +316,98 @@ const Ambulance = () => {
         )}
       </div>
 
-      {loading ? (
-        <div className="text-center text-gray-500">Loading records...</div>
-      ) : ambulanceData.length > 0 ? (
-        <>
-          <div className="overflow-x-auto mt-4">
-            <table className="min-w-full border border-gray-300">
-              <thead className="bg-blue-100">
-                <tr>
-                  <th className="p-2 border">Date & Time</th>
-                  <th className="p-2 border">Patient</th>
-                  <th className="p-2 border">Age/Gender</th>
-                  <th className="p-2 border">Issue</th>
-                  <th className="p-2 border">Pickup</th>
-                  <th className="p-2 border">Drop</th>
-                  {/* <th className="p-2 border">Ambulance</th> */}
-                  {/* <th className="p-2 border">Staff</th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {ambulanceData.map((record) => (
-                  <tr key={record._id} className="hover:bg-gray-50">
-                    <td className="p-2 border">{record.dateTime}</td>
-                    <td className="p-2 border">{record.patientName}</td>
-                    <td className="p-2 border">{record.ageGender}</td>
-                    <td className="p-2 border">{record.healthIssue}</td>
-                    <td className="p-2 border">{record.pickupFrom}</td>
-                    <td className="p-2 border">{record.dropTo}</td>
-                    {/* <td className="p-2 border">{record.ambulanceName}</td> */}
-                    {/* <td className="p-2 border">{record.staffAttended}</td> */}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Loading records...</p>
+        </div>
+      )}
 
-          {/* Pagination Controls */}
-          <div className="flex justify-center items-center gap-4 mt-4">
-            <button
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {page} of {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-            >
-              Next
-            </button>
+      {/* Records Table */}
+      {!loading && (
+        ambulanceData.length > 0 ? (
+          <>
+            <div className="overflow-x-auto mt-4">
+              <table className="min-w-full border border-gray-300">
+                <thead className="bg-blue-100">
+                  <tr>
+                    <th className="p-2 border">Date & Time</th>
+                    <th className="p-2 border">Patient</th>
+                    <th className="p-2 border">Age/Gender</th>
+                    {/* <th className="p-2 border">Area</th>
+                    <th className="p-2 border">Village/Ward</th> */}
+                    <th className="p-2 border">Issue</th>
+                    <th className="p-2 border">Pickup</th>
+                    <th className="p-2 border">Drop</th>
+                    {/* <th className="p-2 border">Mobile</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {ambulanceData.map((record) => (
+                    <tr key={record._id} className="hover:bg-gray-50">
+                      <td className="p-2 border">{record.dateTime}</td>
+                      <td className="p-2 border">{record.patientName}</td>
+                      <td className="p-2 border">{record.ageGender}</td>
+                      {/* <td className="p-2 border text-sm">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          record.areaType === 'Panchayat' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {record.areaType}
+                        </span>
+                        <div className="mt-1">{record.areaName}</div>
+                      </td>
+                      <td className="p-2 border">{record.villageOrWard}</td> */}
+                      <td className="p-2 border">{record.healthIssue}</td>
+                      <td className="p-2 border">{record.pickupFrom}</td>
+                      <td className="p-2 border">{record.dropTo}</td>
+                      {/* <td className="p-2 border">{record.mobileNumber}</td> */}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mt-6">
+              <div className="text-sm text-gray-600">
+                Showing {ambulanceData.length} of {counts.filtered} filtered records
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-8">
+            <div className="text-gray-500 text-lg">No records found</div>
+            <p className="text-gray-400 text-sm mt-2">
+              {filters.selectedArea || filters.selectedVillage 
+                ? "Try adjusting your filters to see more results"
+                : "Upload some records or adjust your filters to get started"
+              }
+            </p>
           </div>
-        </>
-      ) : (
-        <p className="text-gray-500 mt-4">No records found.</p>
+        )
       )}
     </div>
   );
