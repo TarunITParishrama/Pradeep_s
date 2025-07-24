@@ -340,7 +340,7 @@ const Ambulance = () => {
                     <th className="p-2 border">Issue</th>
                     <th className="p-2 border">Pickup</th>
                     <th className="p-2 border">Drop</th>
-                    {/* <th className="p-2 border">Mobile</th> */}
+                    <th className="p-2 border">Mobile</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -363,7 +363,7 @@ const Ambulance = () => {
                       <td className="p-2 border">{record.healthIssue}</td>
                       <td className="p-2 border">{record.pickupFrom}</td>
                       <td className="p-2 border">{record.dropTo}</td>
-                      {/* <td className="p-2 border">{record.mobileNumber}</td> */}
+                      <td className="p-2 border">{record.mobileNumber}</td>
                     </tr>
                   ))}
                 </tbody>
